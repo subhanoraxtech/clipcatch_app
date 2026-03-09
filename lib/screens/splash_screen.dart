@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward();
 
     // Navigate to MainScreen after delay
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(milliseconds: 2200), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
@@ -55,14 +55,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            colors: [AppTheme.surfaceDark, AppTheme.backgroundDark],
+            radius: 1.5,
+            center: Alignment.center,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -70,65 +71,68 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
+                final scale = _scaleAnimation.value * 1.05; // Slightly larger pop
                 return Opacity(
                   opacity: _opacityAnimation.value,
                   child: Transform.scale(
-                    scale: _scaleAnimation.value,
+                    scale: scale,
                     child: Container(
-                      padding: const EdgeInsets.all(24),
+                      width: 160,
+                      height: 160,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
+                        gradient: LinearGradient(
+                          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(52),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 30,
+                            color: AppTheme.primaryColor.withOpacity(0.3),
+                            blurRadius: 40,
                             spreadRadius: 5,
+                            offset: const Offset(0, 15),
                           ),
                         ],
                       ),
                       child: const Icon(
-                        Icons.cloud_download,
-                        size: 80,
-                        color: AppTheme.primaryColor,
+                        Icons.auto_awesome_rounded, 
+                        size: 80, 
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 );
               },
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 48),
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
                 return Opacity(
                   opacity: _opacityAnimation.value,
-                  child: Text(
-                    'InstaVibe',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? AppTheme.textDark : AppTheme.textLight,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _opacityAnimation.value,
-                  child: Text(
-                    'Premium Video Downloader',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 1.2,
-                    ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'ClipCatch',
+                        style: const TextStyle(
+                          fontSize: 38,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.textDark,
+                          letterSpacing: 3.0,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Premium Video Downloader'.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2.5,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },

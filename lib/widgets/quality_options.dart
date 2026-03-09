@@ -22,8 +22,8 @@ class SectionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: accentColor!.withValues(alpha: 0.1),
-              border: Border.all(color: accentColor!.withValues(alpha: 0.2)),
+              color: accentColor!.withOpacity(0.1),
+              border: Border.all(color: accentColor!.withOpacity(0.2)),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -56,7 +56,7 @@ class SectionHeader extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Divider(
-            color: accentColor?.withValues(alpha: 0.2) ??
+            color: accentColor?.withOpacity(0.2) ??
                 (isDark ? AppTheme.surfaceDark : const Color(0xFFE2E8F0)),
             height: 1,
           ),
@@ -86,53 +86,68 @@ class QualityOptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = isPremium ? Colors.amber : AppTheme.primaryColor;
-    final borderColor = isDark ? AppTheme.surfaceDark : const Color(0xFFE2E8F0);
+    final primary = isPremium ? AppTheme.accentColor : AppTheme.primaryColor;
+    final borderColor = isSelected 
+        ? primary 
+        : (isDark ? AppTheme.borderDark : AppTheme.borderLight);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: isSelected ? primary : borderColor),
-          borderRadius: BorderRadius.circular(12),
-          color: isDark ? AppTheme.backgroundDark : Colors.white,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.textDark : AppTheme.textLight,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: borderColor, width: isSelected ? 1.5 : 1),
+            borderRadius: BorderRadius.circular(16),
+            color: isDark ? AppTheme.surfaceDark : Colors.white,
+            boxShadow: isSelected
+              ? [BoxShadow(color: primary.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      color: isDark ? AppTheme.textDark : AppTheme.textLight,
+                    ),
                   ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight,
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                if (isPremium) ...[
-                  Icon(Icons.workspace_premium, color: primary.withValues(alpha: 0.6), size: 20),
-                  const SizedBox(width: 12),
                 ],
-                _RadioDot(isSelected: isSelected, color: primary, isDark: isDark),
-              ],
-            )
-          ],
+              ),
+              Row(
+                children: [
+                  if (isSelected) 
+                    Icon(Icons.check_circle_rounded, color: primary, size: 20)
+                  else
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: isDark ? AppTheme.borderDark : AppTheme.borderLight, width: 2),
+                      ),
+                    ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -159,74 +174,80 @@ class PremiumQualityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const primary = Colors.amber;
+    const primary = AppTheme.accentColor;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: primary.withValues(alpha: 0.3)),
-          borderRadius: BorderRadius.circular(12),
-          color: primary.withValues(alpha: 0.05),
-          boxShadow: isSelected
-              ? [BoxShadow(color: primary.withValues(alpha: 0.1), blurRadius: 15)]
-              : [],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AppTheme.textDark : AppTheme.textLight,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: primary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        badgeText.toUpperCase(),
-                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.black),
-                      ),
-                    )
-                  ],
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight,
-                  ),
-                ),
-              ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected ? primary : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+              width: isSelected ? 2 : 1,
             ),
-            Row(
-              children: [
-                const Icon(Icons.star, color: primary, size: 20),
-                const SizedBox(width: 12),
-                _RadioDot(
-                  isSelected: isSelected,
-                  color: primary,
-                  isDark: isDark,
-                  unselectedColor: primary.withValues(alpha: 0.5),
-                ),
-              ],
-            )
-          ],
+            borderRadius: BorderRadius.circular(20),
+            gradient: isSelected ? LinearGradient(
+              colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ) : null,
+            color: isDark ? AppTheme.surfaceDark : Colors.white,
+            boxShadow: isSelected
+                ? [BoxShadow(color: primary.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 8))]
+                : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppTheme.textDark : AppTheme.textLight,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: primary,
+                          borderRadius: BorderRadius.circular(6),
+                          boxShadow: [BoxShadow(color: primary.withOpacity(0.3), blurRadius: 8)],
+                        ),
+                        child: Text(
+                          badgeText.toUpperCase(),
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.black, letterSpacing: 0.5),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight,
+                    ),
+                  ),
+                ],
+              ),
+              Icon(
+                isSelected ? Icons.verified_rounded : Icons.workspace_premium_rounded,
+                color: isSelected ? primary : primary.withOpacity(0.4),
+                size: 28,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -252,20 +273,25 @@ class QualityPill extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryColor
-              : (isDark ? AppTheme.surfaceDark : const Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(20),
+              : (isDark ? AppTheme.surfaceDark : Colors.white),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+          ),
+          boxShadow: isSelected ? [BoxShadow(color: AppTheme.primaryColor.withOpacity(0.2), blurRadius: 8)] : [],
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
             color: isSelected
                 ? Colors.white
                 : (isDark ? AppTheme.textDark : AppTheme.textLight),

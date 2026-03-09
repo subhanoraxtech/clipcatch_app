@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
@@ -26,9 +27,8 @@ class DownloadListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight;
-    final secondaryTextColor = isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight;
+    final surfaceColor = AppTheme.surfaceDark;
+    final secondaryTextColor = AppTheme.textMutedDark;
 
     return InkWell(
       onTap: onTap,
@@ -55,7 +55,7 @@ class DownloadListItem extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: isDark ? AppTheme.textDark : AppTheme.textLight,
+                      color: AppTheme.textDark,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -69,9 +69,7 @@ class DownloadListItem extends StatelessWidget {
                   Text(
                     'Downloaded on $date',
                     style: TextStyle(
-                      color: isDark
-                          ? AppTheme.textMutedDark.withValues(alpha: 0.8)
-                          : AppTheme.textMutedLight.withValues(alpha: 0.8),
+                      color: AppTheme.textMutedDark.withOpacity(0.8),
                       fontSize: 11,
                     ),
                   ),
@@ -115,7 +113,9 @@ class _Thumbnail extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         color: surfaceColor,
         image: DecorationImage(
-          image: NetworkImage(imageUrl),
+          image: imageUrl.startsWith('http') 
+              ? NetworkImage(imageUrl) as ImageProvider
+              : FileImage(File(imageUrl)),
           fit: BoxFit.cover,
         ),
       ),

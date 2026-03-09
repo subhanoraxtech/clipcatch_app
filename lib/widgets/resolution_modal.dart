@@ -1,42 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/widgets/quality_options.dart';
 
 /// A bottom-sheet modal that lets users select a video quality before downloading.
 class ResolutionModal extends StatefulWidget {
-  final VoidCallback onDownload;
+  final Function(String) onDownload;
+  final String? initialSelection;
+  final String? buttonLabel;
+  final IconData? buttonIcon;
 
-  const ResolutionModal({super.key, required this.onDownload});
+  const ResolutionModal({
+    super.key, 
+    required this.onDownload,
+    this.initialSelection,
+    this.buttonLabel,
+    this.buttonIcon,
+  });
 
   @override
   State<ResolutionModal> createState() => _ResolutionModalState();
 }
 
 class _ResolutionModalState extends State<ResolutionModal> {
-  String _selected = '720p';
+  late String _selected;
 
-  void _select(String value) => setState(() => _selected = value);
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.initialSelection ?? '720p';
+  }
+
+  void _select(String value) {
+    if (_selected != value) {
+      HapticFeedback.lightImpact();
+      setState(() => _selected = value);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = AppTheme.surfaceDark;
+    final textColor = AppTheme.textDark;
+    final mutedColor = AppTheme.textMutedDark;
 
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: AppTheme.backgroundDark,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildHandle(isDark),
-          _buildHeader(isDark),
-          const Divider(height: 1),
-          _buildContent(isDark),
-          _buildFooter(isDark),
+          _buildHeader(),
+          const SizedBox(height: 8),
+          _buildContent(),
+          _buildFooter(),
         ],
       ),
     );
@@ -46,50 +68,54 @@ class _ResolutionModalState extends State<ResolutionModal> {
 
   Widget _buildHandle(bool isDark) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      height: 6,
-      width: 48,
+      margin: const EdgeInsets.only(top: 12),
+      height: 5,
+      width: 40,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.surfaceDark : const Color(0xFFCBD5E1),
-        borderRadius: BorderRadius.circular(3),
+        color: isDark ? AppTheme.borderDark : const Color(0xFFCBD5E1),
+        borderRadius: BorderRadius.circular(2.5),
       ),
     );
   }
 
-  Widget _buildHeader(bool isDark) {
+  Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(28, 12, 16, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Select Quality',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? AppTheme.textDark : AppTheme.textLight,
-              letterSpacing: -0.5,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontSize: 24,
             ),
           ),
           IconButton(
-            icon: Icon(Icons.close,
-                color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight),
             onPressed: () => Navigator.pop(context),
+            icon: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceDark,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.borderDark),
+              ),
+              child: const Icon(Icons.close_rounded, size: 20),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(bool isDark) {
+  Widget _buildContent() {
     return Flexible(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Free tier
-            const SectionHeader(title: 'Free'),
+            const SectionHeader(title: 'Standard'),
             const SizedBox(height: 16),
             QualityOptionCard(
               title: '720p',
@@ -104,95 +130,94 @@ class _ResolutionModalState extends State<ResolutionModal> {
               isSelected: _selected == '480p',
               onTap: () => _select('480p'),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                QualityPill(label: '360p', isSelected: _selected == '360p', onTap: () => _select('360p')),
-                const SizedBox(width: 8),
-                QualityPill(label: '240p', isSelected: _selected == '240p', onTap: () => _select('240p')),
-                const SizedBox(width: 8),
-                QualityPill(label: '144p', isSelected: _selected == '144p', onTap: () => _select('144p')),
-              ],
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  QualityPill(label: '360p', isSelected: _selected == '360p', onTap: () => _select('360p')),
+                  const SizedBox(width: 8),
+                  QualityPill(label: '240p', isSelected: _selected == '240p', onTap: () => _select('240p')),
+                  const SizedBox(width: 8),
+                  QualityPill(label: '144p', isSelected: _selected == '144p', onTap: () => _select('144p')),
+                ],
+              ),
             ),
 
             const SizedBox(height: 32),
 
-            // Premium tier
-            const SectionHeader(title: 'Premium', accentColor: Colors.amber),
+            const SectionHeader(title: 'Ultra Premium', accentColor: AppTheme.accentColor),
             const SizedBox(height: 16),
             PremiumQualityCard(
               title: '4K Ultra HD',
-              subtitle: 'Crisp detail for large screens',
-              badgeText: 'Best',
+              subtitle: 'Maximum cinematic detail',
+              badgeText: 'Elite',
               isSelected: _selected == '4K Ultra HD',
               onTap: () => _select('4K Ultra HD'),
             ),
             const SizedBox(height: 12),
-            QualityOptionCard(
+            PremiumQualityCard(
               title: '2K Quad HD',
-              subtitle: 'Professional quality',
-              isPremium: true,
+              subtitle: 'Professional sharp quality',
+              badgeText: 'Pro',
               isSelected: _selected == '2K Quad HD',
               onTap: () => _select('2K Quad HD'),
             ),
             const SizedBox(height: 12),
-            QualityOptionCard(
+            PremiumQualityCard(
               title: '1080p Full HD',
-              subtitle: 'Perfect for phones',
-              isPremium: true,
+              subtitle: 'Best for standard displays',
+              badgeText: 'Pro',
               isSelected: _selected == '1080p Full HD',
               onTap: () => _select('1080p Full HD'),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFooter(bool isDark) {
+  Widget _buildFooter() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppTheme.surfaceDark : const Color(0xFFE2E8F0),
-          ),
-        ),
+        color: AppTheme.backgroundDark,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, -10),
+            blurRadius: 20,
+          )
+        ],
       ),
       child: Column(
         children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 4,
-                shadowColor: AppTheme.primaryColor.withValues(alpha: 0.4),
-              ),
-              icon: const Icon(Icons.download, size: 20),
-              label: const Text('Download Now',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                Navigator.pop(context);
-                widget.onDownload();
-              },
+          ElevatedButton(
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              Navigator.pop(context);
+              widget.onDownload(_selected);
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(widget.buttonIcon ?? Icons.download_rounded, size: 20),
+                const SizedBox(width: 8),
+                Text(widget.buttonLabel ?? 'Start Download'),
+              ],
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'By downloading, you agree to our Terms of Service. '
-            'Premium features require an active subscription.',
+            'High quality downloads may take longer depending on connection speed.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11,
-              color: isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight,
+              fontSize: 12,
+              color: AppTheme.textMutedDark,
             ),
           ),
-          const SizedBox(height: 16),
         ],
       ),
     );
@@ -200,11 +225,23 @@ class _ResolutionModalState extends State<ResolutionModal> {
 }
 
 /// Show the resolution selection bottom sheet.
-void showResolutionModal(BuildContext context, VoidCallback onDownload) {
+void showResolutionModal(
+  BuildContext context, 
+  Function(String) onDownload, {
+  String? initialSelection,
+  String? buttonLabel,
+  IconData? buttonIcon,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => ResolutionModal(onDownload: onDownload),
+    barrierColor: Colors.black.withOpacity(0.5),
+    builder: (_) => ResolutionModal(
+      onDownload: onDownload, 
+      initialSelection: initialSelection,
+      buttonLabel: buttonLabel,
+      buttonIcon: buttonIcon,
+    ),
   );
 }
