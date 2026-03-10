@@ -6,10 +6,10 @@ class AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor = AppTheme.textMutedDark;
-    final textColor = Colors.white;
-    final cardBg = const Color(0xFF0F172A).withOpacity(0.5);
-    final dividerColor = AppTheme.surfaceDark;
+    final brightness = Theme.of(context).brightness;
+    final mutedColor = AppTheme.textMutedFor(brightness);
+    final cardBg = AppTheme.surfaceFor(brightness).withOpacity01(brightness == Brightness.dark ? 0.55 : 0.92);
+    final dividerColor = AppTheme.borderFor(brightness).withOpacity01(brightness == Brightness.dark ? 0.9 : 0.6);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,10 +31,10 @@ class AboutSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: cardBg,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.borderDark),
+            border: Border.all(color: AppTheme.borderFor(brightness)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withOpacity01(brightness == Brightness.dark ? 0.2 : 0.06),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),

@@ -21,13 +21,13 @@ class SubscriptionCard extends StatelessWidget {
                 end: Alignment.bottomRight,
               )
             : LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
+                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity01(0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         boxShadow: [
           BoxShadow(
-            color: (isPro ? const Color(0xFFEAB308) : AppTheme.primaryColor).withOpacity(0.3),
+            color: (isPro ? const Color(0xFFEAB308) : AppTheme.primaryColor).withOpacity01(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -41,7 +41,7 @@ class SubscriptionCard extends StatelessWidget {
             child: Icon(
               isPro ? Icons.diamond_rounded : Icons.star_rounded,
               size: 120,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withOpacity01(0.1),
             ),
           ),
           Padding(
@@ -55,7 +55,7 @@ class SubscriptionCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withOpacity01(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -86,7 +86,7 @@ class SubscriptionCard extends StatelessWidget {
                 Text(
                   isPro ? 'Enjoy unlimited 4K downloads & zero ads' : 'Unlock 4K downloads and premium features',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withOpacity01(0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -124,9 +124,9 @@ class SubscriptionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withOpacity01(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withOpacity01(0.2)),
       ),
       child: const Text(
         'Manage Subscription',

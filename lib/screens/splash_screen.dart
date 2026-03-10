@@ -55,12 +55,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
-            colors: [AppTheme.surfaceDark, AppTheme.backgroundDark],
+            colors: [
+              AppTheme.surfaceFor(brightness),
+              AppTheme.backgroundFor(brightness),
+            ],
             radius: 1.5,
             center: Alignment.center,
           ),
@@ -81,14 +85,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       height: 160,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+                          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity01(0.7)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(52),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.3),
+                            color: AppTheme.primaryColor.withOpacity01(0.3),
                             blurRadius: 40,
                             spreadRadius: 5,
                             offset: const Offset(0, 15),
@@ -115,10 +119,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     children: [
                       Text(
                         'ClipCatch',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 38,
                           fontWeight: FontWeight.w900,
-                          color: AppTheme.textDark,
+                          color: AppTheme.textFor(brightness),
                           letterSpacing: 3.0,
                         ),
                       ),

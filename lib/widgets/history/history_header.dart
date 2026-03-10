@@ -15,11 +15,12 @@ class HistoryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      decoration: const BoxDecoration(
-        color: AppTheme.backgroundDark,
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundFor(brightness),
       ),
       child: Row(
         children: [
@@ -39,8 +40,8 @@ class HistoryHeader extends StatelessWidget {
             icon: Icon(
               Icons.delete_outline_rounded,
               color: isEmpty 
-                ? Colors.white24
-                : AppTheme.textDark,
+                ? AppTheme.textMutedFor(brightness).withOpacity01(0.35)
+                : AppTheme.textFor(brightness),
             ),
           ),
           IconButton(
@@ -53,7 +54,7 @@ class HistoryHeader extends StatelessWidget {
             },
             icon: Icon(
               Icons.settings_outlined,
-              color: AppTheme.textDark,
+              color: AppTheme.textFor(brightness),
             ),
           ),
         ],

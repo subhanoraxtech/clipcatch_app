@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:gal/gal.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:video_downloader/screens/settings_screen.dart';
 import 'package:video_downloader/widgets/download_list_item.dart';
 import 'package:video_downloader/widgets/history/history_header.dart';
 import 'package:video_downloader/screens/video_player_screen.dart';
@@ -108,17 +106,11 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
     }
   }
 
-  Future<void> _openGalleryApp() async {
-    try {
-      await Gal.open();
-    } catch (e) {
-      debugPrint('Error opening gallery: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final surfaceColor = AppTheme.surfaceDark;
+    final brightness = Theme.of(context).brightness;
+    final surfaceColor = AppTheme.surfaceFor(brightness);
+    final dividerColor = AppTheme.borderFor(brightness).withOpacity01(brightness == Brightness.dark ? 0.9 : 0.6);
 
     final query = _searchController.text.toLowerCase();
     final filteredDownloads = widget.downloads
@@ -138,7 +130,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: TextField(
                 controller: _searchController,
-                style: const TextStyle(color: AppTheme.textDark),
+                style: TextStyle(color: AppTheme.textFor(brightness)),
                 decoration: InputDecoration(
                   hintText: 'Search downloaded videos...',
                   prefixIcon: const Icon(Icons.search),
@@ -167,15 +159,20 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                                  Icon(Icons.video_library_outlined,
-                              size: 64, color: Colors.white24),
+                          Icon(
+                            Icons.video_library_outlined,
+                            size: 64,
+                            color: AppTheme.textMutedFor(brightness).withOpacity01(0.35),
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             _searchController.text.isEmpty
                                 ? 'No downloads yet'
                                 : 'No results found',
-                            style: const TextStyle(
-                                color: Colors.white38, fontSize: 16),
+                            style: TextStyle(
+                              color: AppTheme.textMutedFor(brightness).withOpacity01(0.55),
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       ),
@@ -185,7 +182,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
                       itemCount: filteredDownloads.length,
                       separatorBuilder: (_, _) => Padding(
                         padding: const EdgeInsets.only(left: 140),
-                        child: Divider(color: surfaceColor, height: 1),
+                        child: Divider(color: dividerColor, height: 1),
                       ),
                       itemBuilder: (context, index) {
                         final item = filteredDownloads[index];
@@ -239,8 +236,8 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
           left: 16,
           right: 16,
         ),
-        decoration: const BoxDecoration(
-          color: AppTheme.surfaceDark,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceFor(Theme.of(context).brightness),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -251,7 +248,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withOpacity01(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

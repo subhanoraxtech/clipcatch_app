@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTheme {
   // Brand Colors
@@ -77,7 +78,7 @@ class AppTheme {
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: 0.2),
         minimumSize: const Size.fromHeight(58),
       ).copyWith(
-        overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.1)),
+        overlayColor: WidgetStateProperty.all(Colors.white.withOpacity01(0.1)),
       ),
     ),
     cardTheme: CardThemeData(
@@ -162,7 +163,7 @@ class AppTheme {
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: 0.2),
         minimumSize: const Size.fromHeight(58),
       ).copyWith(
-        overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.1)),
+        overlayColor: WidgetStateProperty.all(Colors.white.withOpacity01(0.1)),
       ),
     ),
     cardTheme: CardThemeData(
@@ -183,4 +184,35 @@ class AppTheme {
       type: BottomNavigationBarType.fixed,
     ),
   );
+
+  static Color backgroundFor(Brightness brightness) =>
+      brightness == Brightness.dark ? backgroundDark : backgroundLight;
+
+  static Color surfaceFor(Brightness brightness) =>
+      brightness == Brightness.dark ? surfaceDark : surfaceLight;
+
+  static Color textFor(Brightness brightness) =>
+      brightness == Brightness.dark ? textDark : textLight;
+
+  static Color textMutedFor(Brightness brightness) =>
+      brightness == Brightness.dark ? textMutedDark : textMutedLight;
+
+  static Color borderFor(Brightness brightness) =>
+      brightness == Brightness.dark ? borderDark : borderLight;
+
+  static SystemUiOverlayStyle systemUiFor(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+    );
+  }
+}
+
+extension ColorOpacityCompat on Color {
+  Color withOpacity01(double opacity) {
+    final a = opacity.clamp(0.0, 1.0);
+    return withValues(alpha: a);
+  }
 }

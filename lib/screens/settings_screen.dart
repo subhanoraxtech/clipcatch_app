@@ -6,7 +6,7 @@ import 'package:video_downloader/widgets/settings/preferences_section.dart';
 import 'package:video_downloader/widgets/settings/about_section.dart';
 import 'package:video_downloader/widgets/resolution_modal.dart';
 import 'package:video_downloader/theme/subscription_notifier.dart';
-
+import 'package:video_downloader/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -58,12 +58,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
+      value: AppTheme.systemUiFor(brightness),
       child: Scaffold(
         body: SafeArea(
           child: Column(
@@ -71,7 +68,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SettingsHeader(),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 24,
+                  ),
                   children: [
                     ListenableBuilder(
                       listenable: subscriptionNotifier,
@@ -86,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onNotificationsChanged: _updateNotifications,
                       onResolutionTap: () {
                         showResolutionModal(
-                          context, 
+                          context,
                           (res) {
                             _updateRes(res);
                           },
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         '© 2024 ClipCatch Inc.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF334155),
+                          color: AppTheme.textMutedFor(brightness),
                         ),
                       ),
                     ),

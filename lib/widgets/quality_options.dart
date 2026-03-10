@@ -22,8 +22,8 @@ class SectionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: accentColor!.withOpacity(0.1),
-              border: Border.all(color: accentColor!.withOpacity(0.2)),
+              color: accentColor!.withOpacity01(0.1),
+              border: Border.all(color: accentColor!.withOpacity01(0.2)),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -56,7 +56,7 @@ class SectionHeader extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Divider(
-            color: accentColor?.withOpacity(0.2) ??
+            color: accentColor?.withOpacity01(0.2) ??
                 (isDark ? AppTheme.surfaceDark : const Color(0xFFE2E8F0)),
             height: 1,
           ),
@@ -104,7 +104,7 @@ class QualityOptionCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             color: isDark ? AppTheme.surfaceDark : Colors.white,
             boxShadow: isSelected
-              ? [BoxShadow(color: primary.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: primary.withOpacity01(0.1), blurRadius: 10, offset: const Offset(0, 4))]
               : [],
           ),
           child: Row(
@@ -191,13 +191,13 @@ class PremiumQualityCard extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(20),
             gradient: isSelected ? LinearGradient(
-              colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
+              colors: [primary.withOpacity01(0.15), primary.withOpacity01(0.05)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ) : null,
             color: isDark ? AppTheme.surfaceDark : Colors.white,
             boxShadow: isSelected
-                ? [BoxShadow(color: primary.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 8))]
+                ? [BoxShadow(color: primary.withOpacity01(0.2), blurRadius: 20, offset: const Offset(0, 8))]
                 : [],
           ),
           child: Row(
@@ -222,7 +222,7 @@ class PremiumQualityCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: primary,
                           borderRadius: BorderRadius.circular(6),
-                          boxShadow: [BoxShadow(color: primary.withOpacity(0.3), blurRadius: 8)],
+                          boxShadow: [BoxShadow(color: primary.withOpacity01(0.3), blurRadius: 8)],
                         ),
                         child: Text(
                           badgeText.toUpperCase(),
@@ -243,7 +243,7 @@ class PremiumQualityCard extends StatelessWidget {
               ),
               Icon(
                 isSelected ? Icons.verified_rounded : Icons.workspace_premium_rounded,
-                color: isSelected ? primary : primary.withOpacity(0.4),
+                color: isSelected ? primary : primary.withOpacity01(0.4),
                 size: 28,
               ),
             ],
@@ -285,7 +285,7 @@ class QualityPill extends StatelessWidget {
           border: Border.all(
             color: isSelected ? AppTheme.primaryColor : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
           ),
-          boxShadow: isSelected ? [BoxShadow(color: AppTheme.primaryColor.withOpacity(0.2), blurRadius: 8)] : [],
+          boxShadow: isSelected ? [BoxShadow(color: AppTheme.primaryColor.withOpacity01(0.2), blurRadius: 8)] : [],
         ),
         child: Text(
           label,
@@ -298,44 +298,6 @@ class QualityPill extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// ── Private helper ──────────────────────────────────────────────────────────
-
-class _RadioDot extends StatelessWidget {
-  final bool isSelected;
-  final Color color;
-  final bool isDark;
-  final Color? unselectedColor;
-
-  const _RadioDot({
-    required this.isSelected,
-    required this.color,
-    required this.isDark,
-    this.unselectedColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isSelected
-              ? color
-              : (unselectedColor ??
-                  (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1))),
-          width: 2,
-        ),
-        color: isSelected ? color : Colors.transparent,
-      ),
-      child: isSelected
-          ? const Center(child: Icon(Icons.circle, size: 8, color: Colors.white))
-          : null,
     );
   }
 }

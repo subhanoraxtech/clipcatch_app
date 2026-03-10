@@ -1,8 +1,7 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
@@ -20,9 +19,10 @@ class VideoPlayerScreen extends StatefulWidget {
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  late VideoPlayerController _videoPlayerController;
-  ChewieController? _chewieController;
+  late VideoPlayerController _controller;
   bool _hasError = false;
+  bool _showControls = true;
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -31,67 +31,39 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   Future<void> _initializePlayer() async {
-    final file = File(widget.videoPath);
-    if (!await file.exists()) {
+    try {
+      if (widget.videoPath.startsWith('http')) {
+        _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoPath));
+      } else {
+        final file = File(widget.videoPath);
+        if (!await file.exists()) {
+          debugPrint('Video file does not exist at path: ${widget.videoPath}');
+          if (mounted) setState(() => _hasError = true);
+          return;
+        }
+        final size = await file.length();
+        debugPrint('Initializing video file: ${widget.videoPath} (Size: $size bytes)');
+        if (size == 0) {
+          debugPrint('Error: Video file is empty (0 bytes)');
+          if (mounted) setState(() => _hasError = true);
+          return;
+        }
+        _controller = VideoPlayerController.file(file);
+      }
+
+      await _controller.initialize();
+      _controller.play();
+      
       if (mounted) {
         setState(() {
-          _hasError = true;
+          _isInitialized = true;
         });
       }
-      return;
-    }
 
-    try {
-      _videoPlayerController = VideoPlayerController.file(file);
-      await _videoPlayerController.initialize();
-      
-      _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
-        autoPlay: true,
-        looping: false,
-        aspectRatio: _videoPlayerController.value.aspectRatio,
-        allowFullScreen: true,
-        allowMuting: true,
-        showControls: true,
-        autoInitialize: true,
-        deviceOrientationsAfterFullScreen: [
-          DeviceOrientation.portraitUp,
-        ],
-        placeholder: Container(
-          color: Colors.black,
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: AppTheme.primaryColor,
-              strokeWidth: 2,
-            ),
-          ),
-        ),
-        materialProgressColors: ChewieProgressColors(
-          playedColor: AppTheme.primaryColor,
-          handleColor: AppTheme.primaryColor,
-          backgroundColor: Colors.white24,
-          bufferedColor: Colors.white38,
-        ),
-        errorBuilder: (context, errorMessage) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white54, size: 42),
-                const SizedBox(height: 16),
-                Text(
-                  errorMessage,
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-      
-      if (mounted) setState(() {});
-    } catch (e) {
-      debugPrint('Error initializing video player: $e');
+      _startHideTimer();
+    } catch (e, stack) {
+      debugPrint('CRITICAL: Error initializing video player: $e');
+      debugPrint('Stack trace: $stack');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -100,10 +72,32 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     }
   }
 
+  void _startHideTimer() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _controller.value.isPlaying && _showControls) {
+        setState(() {
+          _showControls = false;
+        });
+      }
+    });
+  }
+
+  Timer? _hideTimer;
+
+  void _toggleControls() {
+    setState(() {
+      _showControls = !_showControls;
+    });
+    if (_showControls) {
+      _startHideTimer();
+    }
+  }
+
   @override
   void dispose() {
-    _videoPlayerController.dispose();
-    _chewieController?.dispose();
+    _hideTimer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -111,64 +105,209 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          Center(
-            child: _hasError
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.video_library_rounded, color: Colors.white12, size: 80),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Unable to play video',
-                        style: TextStyle(
-                          color: Colors.white, 
-                          fontSize: 18, 
-                          fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'The file may be corrupt or moved.',
-                        style: TextStyle(color: Colors.white38, fontSize: 14),
-                      ),
-                      const SizedBox(height: 32),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        ),
-                        child: const Text('Go Back', style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
+      body: _hasError 
+          ? Center(child: _buildErrorWidget()) 
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                // 1. Video Player
+                if (_isInitialized)
+                  Center(
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    ),
                   )
-                : _chewieController != null && _chewieController!.videoPlayerController.value.isInitialized
-                    ? Chewie(controller: _chewieController!)
-                    : const Center(
-                        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                else
+                  const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+
+                // 2. Control Layout
+                if (_isInitialized)
+                  Positioned.fill(
+                    child: AnimatedOpacity(
+                      opacity: _showControls ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: GestureDetector(
+                        onTap: _toggleControls,
+                        behavior: HitTestBehavior.translucent,
+                        child: Stack(
+                          children: [
+                            // 2a. Center Play/Pause (Absorb taps so they're handled here, not toggling)
+                            Center(
+                              child: GestureDetector(
+                                onTap: () {}, // Stop event propagation
+                                child: IconButton(
+                                  iconSize: 80,
+                                  icon: Icon(
+                                    _controller.value.isPlaying 
+                                        ? Icons.pause_circle_filled_rounded 
+                                        : Icons.play_circle_filled_rounded,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _controller.value.isPlaying 
+                                          ? _controller.pause() 
+                                          : _controller.play();
+                                    });
+                                    if (_controller.value.isPlaying) {
+                                      _startHideTimer();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // 2b. Bottom Controls (Absorb taps)
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () {}, // Stop event propagation
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context).padding.bottom + 20,
+                                    left: 16,
+                                    right: 16,
+                                    top: 40,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                      colors: [
+                                        Colors.black.withValues(alpha: 0.95),
+                                        Colors.transparent,
+                                      ],
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      VideoProgressIndicator(
+                                        _controller,
+                                        allowScrubbing: true,
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        colors: const VideoProgressColors(
+                                          playedColor: AppTheme.primaryColor,
+                                          bufferedColor: Colors.white24,
+                                          backgroundColor: Colors.white12,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      ValueListenableBuilder(
+                                        valueListenable: _controller,
+                                        builder: (context, VideoPlayerValue value, child) {
+                                          return Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                _formatDuration(value.position),
+                                                style: const TextStyle(
+                                                  color: Colors.white, 
+                                                  fontSize: 14, 
+                                                  fontWeight: FontWeight.bold
+                                                ),
+                                              ),
+                                              Text(
+                                                _formatDuration(value.duration),
+                                                style: const TextStyle(
+                                                  color: Colors.white, 
+                                                  fontSize: 14, 
+                                                  fontWeight: FontWeight.bold
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-          ),
-          // Back Button Overlay
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 16,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  shape: BoxShape.circle,
+                    ),
+                  ),
+
+                // 3. Toggle Gesture Layer (Only active when controls are NOT visible)
+                if (!_showControls)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: _toggleControls,
+                      behavior: HitTestBehavior.translucent,
+                    ),
+                  ),
+
+                // 4. Back Button (Always accessible)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 10,
+                  left: 16,
+                  child: SafeArea(
+                    child: IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
-              ),
+              ],
             ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    if (duration == Duration.zero) return "00:00";
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    if (duration.inHours > 0) {
+      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    } else {
+      return "$twoDigitMinutes:$twoDigitSeconds";
+    }
+  }
+
+  Widget _buildErrorWidget() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.video_library_rounded, color: Colors.white12, size: 80),
+        const SizedBox(height: 24),
+        const Text(
+          'Unable to play video',
+          style: TextStyle(
+            color: Colors.white, 
+            fontSize: 18, 
+            fontWeight: FontWeight.bold
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'The file may be corrupt or moved.',
+          style: TextStyle(color: Colors.white38, fontSize: 14),
+        ),
+        const SizedBox(height: 32),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: const Text('Go Back', style: TextStyle(color: Colors.white)),
+        ),
+      ],
     );
   }
 }

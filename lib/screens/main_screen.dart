@@ -71,22 +71,19 @@ class _MainScreenState extends State<MainScreen> {
       const SettingsScreen(),
     ];
 
+    final brightness = Theme.of(context).brightness;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
+      value: AppTheme.systemUiFor(brightness),
       child: Scaffold(
         body: IndexedStack(
           index: _selectedIndex,
           children: screens,
         ),
         bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
               top: BorderSide(
-                color: AppTheme.borderDark,
+                color: AppTheme.borderFor(brightness),
                 width: 1,
               ),
             ),

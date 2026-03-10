@@ -7,11 +7,12 @@ class SettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: const BoxDecoration(
-        color: AppTheme.backgroundDark,
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundFor(brightness),
       ),
       child: Row(
         children: [
@@ -24,7 +25,6 @@ class SettingsHeader extends StatelessWidget {
               icon: const Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 20,
-                color: AppTheme.textDark,
               ),
             )
           else

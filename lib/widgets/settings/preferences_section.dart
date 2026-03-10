@@ -22,10 +22,10 @@ class PreferencesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor = AppTheme.textMutedDark;
-    final textColor = Colors.white;
-    final cardBg = const Color(0xFF0F172A).withOpacity(0.5);
-    final dividerColor = AppTheme.surfaceDark;
+    final brightness = Theme.of(context).brightness;
+    final mutedColor = AppTheme.textMutedFor(brightness);
+    final cardBg = AppTheme.surfaceFor(brightness).withOpacity01(brightness == Brightness.dark ? 0.55 : 0.92);
+    final dividerColor = AppTheme.borderFor(brightness).withOpacity01(brightness == Brightness.dark ? 0.9 : 0.6);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,10 +47,10 @@ class PreferencesSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: cardBg,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.borderDark),
+            border: Border.all(color: AppTheme.borderFor(brightness)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withOpacity01(0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -67,8 +67,8 @@ class PreferencesSection extends StatelessWidget {
                     HapticFeedback.lightImpact();
                     onWifiChanged(v);
                   },
-                  activeTrackColor: AppTheme.primaryColor.withOpacity(0.3),
-                  activeColor: AppTheme.primaryColor,
+                  activeTrackColor: AppTheme.primaryColor.withOpacity01(0.3),
+                  activeThumbColor: AppTheme.primaryColor,
                 ),
               ),
               Divider(height: 1, color: dividerColor, indent: 56),
@@ -102,8 +102,8 @@ class PreferencesSection extends StatelessWidget {
                     HapticFeedback.lightImpact();
                     onNotificationsChanged(v);
                   },
-                  activeTrackColor: AppTheme.primaryColor.withOpacity(0.3),
-                  activeColor: AppTheme.primaryColor,
+                  activeTrackColor: AppTheme.primaryColor.withOpacity01(0.3),
+                  activeThumbColor: AppTheme.primaryColor,
                 ),
                 isLast: true,
               ),
@@ -133,7 +133,7 @@ class PreferencesSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withOpacity01(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: AppTheme.primaryColor, size: 22),

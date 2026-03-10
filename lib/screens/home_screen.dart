@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'dart:io';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/widgets/home/home_header.dart';
 import 'package:video_downloader/widgets/home/home_hero_section.dart';
@@ -9,7 +10,6 @@ import 'package:video_downloader/widgets/home/supported_platforms_list.dart';
 import 'package:video_downloader/widgets/active_download_card.dart';
 import 'package:video_downloader/services/api_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
@@ -20,10 +20,7 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 class HomeScreen extends StatefulWidget {
   final Function(Map<String, String>)? onDownloadComplete;
 
-  const HomeScreen({
-    super.key,
-    this.onDownloadComplete,
-  });
+  const HomeScreen({super.key, this.onDownloadComplete});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -32,16 +29,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _urlController = TextEditingController();
   final ApiService _apiService = ApiService();
-  
+
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
   bool _showMockActiveDownload = false;
   String _downloadFileName = 'Downloading Video...';
   String _defaultResolution = '720p';
-  bool _wifiOnly = true;
 
   List<String> _supportedServices = [];
   bool _isLoadingServices = true;
+
+  http.Client? _currentDownloadClient;
+  bool _isCancelledByUser = false;
 
   @override
   void initState() {
@@ -56,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) {
       setState(() {
         _defaultResolution = prefs.getString('default_res') ?? '720p';
-        _wifiOnly = prefs.getBool('wifi_only') ?? true;
       });
     }
   }
@@ -85,9 +83,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _cancelDownload() {
+    setState(() {
+      _isCancelledByUser = true;
+    });
+    _currentDownloadClient?.close();
+    setState(() {
+      _isDownloading = false;
+      _showMockActiveDownload = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Download cancelled'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _urlController.dispose();
+    _currentDownloadClient?.close();
     super.dispose();
   }
 
@@ -104,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // For now we just respect the flag by showing a warning if it's on
     // but we allow it for testing unless we add the package.
     if (wifiOnly) {
-       debugPrint('Wi-Fi Only is enabled. Proceeding with caution.');
+      debugPrint('Wi-Fi Only is enabled. Proceeding with caution.');
     }
 
     // Check permission
@@ -114,11 +131,15 @@ class _HomeScreenState extends State<HomeScreen> {
         final storageStatus = await Permission.storage.status;
         final videoStatus = await Permission.videos.status;
         isGranted = storageStatus.isGranted || videoStatus.isGranted;
-        
+
         if (!isGranted) {
-          final statuses = await [Permission.storage, Permission.videos].request();
-          isGranted = statuses[Permission.storage]!.isGranted || 
-                      statuses[Permission.videos]!.isGranted;
+          final statuses = await [
+            Permission.storage,
+            Permission.videos,
+          ].request();
+          isGranted =
+              statuses[Permission.storage]!.isGranted ||
+              statuses[Permission.videos]!.isGranted;
         }
       } else {
         isGranted = await Permission.photos.request().isGranted;
@@ -130,7 +151,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SnackBar(
               content: Text('Permission required to save videos.'),
               behavior: SnackBarBehavior.floating,
-              action: SnackBarAction(label: 'Settings', onPressed: openAppSettings),
+              action: SnackBarAction(
+                label: 'Settings',
+                onPressed: openAppSettings,
+              ),
             ),
           );
         }
@@ -149,20 +173,29 @@ class _HomeScreenState extends State<HomeScreen> {
       // Parse resolution for Cobalt API
       String parsedResolution = "1080";
       final resLower = resolution.toLowerCase();
-      if (resLower.contains('4k') || resLower.contains('2160')) parsedResolution = "2160";
-      else if (resLower.contains('2k') || resLower.contains('1440')) parsedResolution = "1440";
-      else if (resLower.contains('1080')) parsedResolution = "1080";
-      else if (resLower.contains('720')) parsedResolution = "720";
-      else if (resLower.contains('480')) parsedResolution = "480";
-      else if (resLower.contains('360')) parsedResolution = "360";
-      else if (resLower.contains('240')) parsedResolution = "240";
-      else if (resLower.contains('144')) parsedResolution = "144";
+      if (resLower.contains('4k') || resLower.contains('2160')) {
+        parsedResolution = "2160";
+      } else if (resLower.contains('2k') || resLower.contains('1440')) {
+        parsedResolution = "1440";
+      } else if (resLower.contains('1080')) {
+        parsedResolution = "1080";
+      } else if (resLower.contains('720')) {
+        parsedResolution = "720";
+      } else if (resLower.contains('480')) {
+        parsedResolution = "480";
+      } else if (resLower.contains('360')) {
+        parsedResolution = "360";
+      } else if (resLower.contains('240')) {
+        parsedResolution = "240";
+      } else if (resLower.contains('144')) {
+        parsedResolution = "144";
+      }
 
       setState(() {
         _downloadProgress = 0.15;
         _downloadFileName = 'Analyzing Link...';
       });
-      
+
       final data = await _apiService.processMedia(
         url: _urlController.text,
         resolution: parsedResolution,
@@ -170,22 +203,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (data == null) throw Exception("Could not process video link.");
       if (data['status'] != 'tunnel' && data['status'] != 'redirect') {
-        throw Exception(data['text'] ?? "Unsupported download type: ${data['status']}");
+        throw Exception(
+          data['text'] ?? "Unsupported download type: ${data['status']}",
+        );
       }
 
       String downloadUrl = data['url'];
-      String fileName = data['filename'] ?? 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
-      
+      String fileName =
+          data['filename'] ??
+          'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+      // Replace localhost with actual machine IP for downloads
+      if (downloadUrl.contains('localhost:9000')) {
+        downloadUrl = downloadUrl.replaceFirst(
+          'localhost:9000',
+          '192.168.10.245:9000',
+        );
+      }
+
+      debugPrint('Download URL: $downloadUrl');
+
       // Ensure file has an extension to avoid gallery errors
       if (!fileName.contains('.')) {
         fileName = '$fileName.mp4';
-      } else if (!fileName.toLowerCase().endsWith('.mp4') && 
-                 !fileName.toLowerCase().endsWith('.mkv') && 
-                 !fileName.toLowerCase().endsWith('.webm')) {
+      } else if (!fileName.toLowerCase().endsWith('.mp4') &&
+          !fileName.toLowerCase().endsWith('.mkv') &&
+          !fileName.toLowerCase().endsWith('.webm')) {
         // If it has an extension but it's not a common video one, append .mp4
         fileName = '$fileName.mp4';
       }
-      
+
       // Download URL will use localhost if adb reverse is running
 
       setState(() {
@@ -195,35 +242,109 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Stream Download using http for chunk processing progress
       final client = http.Client();
+      _currentDownloadClient = client; // Store for cancellation
+      _isCancelledByUser = false;
+
       final request = http.Request('GET', Uri.parse(downloadUrl));
-      final streamedResponse = await client.send(request);
+
+      debugPrint('Starting download from: $downloadUrl');
+
+      // Get response with shorter timeout (30 seconds for headers)
+      debugPrint('Waiting for response headers...');
+      late final http.StreamedResponse streamedResponse;
+      try {
+        streamedResponse = await client
+            .send(request)
+            .timeout(
+              const Duration(minutes: 10),
+              onTimeout: () {
+                client.close();
+                throw TimeoutException(
+                  'Server not responding. The tunnel endpoint may be unavailable.',
+                  const Duration(minutes: 10),
+                );
+              },
+            );
+      } catch (e) {
+        debugPrint('Failed to get response: $e');
+        client.close();
+        rethrow;
+      }
+
+      debugPrint('Response received: ${streamedResponse.statusCode}');
+      debugPrint('Content-Length: ${streamedResponse.contentLength}');
 
       if (streamedResponse.statusCode != 200) {
+        client.close();
         throw Exception("Fetch failed: ${streamedResponse.statusCode}");
       }
 
       final contentLength = streamedResponse.contentLength ?? 0;
       int bytesDownloaded = 0;
-      
+
       final appDir = await getApplicationDocumentsDirectory();
       final saveFile = File('${appDir.path}/$fileName');
       final iosink = saveFile.openWrite();
 
+      debugPrint('Saving to: ${saveFile.path}');
+      debugPrint('Content-Length: $contentLength bytes');
+
       // Use addStream to ensure complete file writing
-      await iosink.addStream(streamedResponse.stream.map((chunk) {
-        bytesDownloaded += chunk.length;
-        if (contentLength > 0 && mounted) {
-          setState(() {
-            _downloadProgress = 0.3 + (bytesDownloaded / contentLength) * 0.6;
-          });
-        }
-        return chunk;
-      }));
+      try {
+        debugPrint(
+          'Starting stream download with ${contentLength > 0 ? contentLength : 'unknown'} bytes...',
+        );
+
+        // Create a timeout-aware stream
+        final streamWithTimeout = streamedResponse.stream.timeout(
+          const Duration(minutes: 10),
+          onTimeout: (sink) {
+            debugPrint('Stream timeout - no data received for 10 minutes');
+            sink.addError(
+              TimeoutException(
+                'Download stream stalled - no data for 10 minutes. Server may be slow.',
+                const Duration(minutes: 10),
+              ),
+            );
+          },
+        );
+
+        await iosink.addStream(
+          streamWithTimeout.map((chunk) {
+            if (_isCancelledByUser) {
+              throw Exception('Download cancelled by user');
+            }
+            bytesDownloaded += chunk.length;
+            debugPrint('Downloaded: $bytesDownloaded bytes');
+            if (contentLength > 0 && mounted) {
+              setState(() {
+                _downloadProgress =
+                    0.3 + (bytesDownloaded / contentLength) * 0.6;
+              });
+            } else if (contentLength == 0 && mounted) {
+              // Fallback: assume average video size and show progress
+              final estimatedSize = 100 * 1024 * 1024; // 100MB estimate
+              setState(() {
+                _downloadProgress =
+                    0.3 + (bytesDownloaded / estimatedSize) * 0.6;
+              });
+            }
+            return chunk;
+          }),
+        );
+        debugPrint('Stream completed successfully');
+      } catch (e) {
+        debugPrint('Stream error: $e');
+        await iosink.close();
+        client.close();
+        rethrow;
+      }
 
       await iosink.flush();
       await iosink.close();
       client.close();
 
+      debugPrint('Download completed: $bytesDownloaded bytes');
       setState(() => _downloadProgress = 0.95);
 
       // Save to Gallery
@@ -243,8 +364,9 @@ class _HomeScreenState extends State<HomeScreen> {
       } catch (e) {
         debugPrint('Error getting duration: $e');
       }
-      
-      String durationStr = '${videoDuration.inMinutes.toString().padLeft(2, '0')}:${(videoDuration.inSeconds % 60).toString().padLeft(2, '0')}';
+
+      String durationStr =
+          '${videoDuration.inMinutes.toString().padLeft(2, '0')}:${(videoDuration.inSeconds % 60).toString().padLeft(2, '0')}';
       if (videoDuration == Duration.zero) durationStr = '--:--';
 
       // Extract thumbnail
@@ -268,16 +390,21 @@ class _HomeScreenState extends State<HomeScreen> {
           _isDownloading = false;
           _showMockActiveDownload = false;
         });
-        
+
         widget.onDownloadComplete?.call({
           'id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'title': fileName, 
+          'title': fileName,
           'resolution': resolution,
-          'size': contentLength > 0 ? '${(contentLength / (1024 * 1024)).toStringAsFixed(1)}MB' : '---',
-          'date': '${DateTime.now().month}/${DateTime.now().day}/${DateTime.now().year}',
+          'size': contentLength > 0
+              ? '${(contentLength / (1024 * 1024)).toStringAsFixed(1)}MB'
+              : '---',
+          'date':
+              '${DateTime.now().month}/${DateTime.now().day}/${DateTime.now().year}',
           'duration': durationStr,
           'path': saveFile.path,
-          'image': thumbnailPath ?? 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop', 
+          'image':
+              thumbnailPath ??
+              'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop',
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -293,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('Download error: $e');
       String msg = e.toString().replaceAll("Exception: ", "");
       if (e is TimeoutException) msg = "Connection timed out.";
-      
+
       if (mounted) {
         setState(() {
           _isDownloading = false;
@@ -314,51 +441,54 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
+      value: AppTheme.systemUiFor(brightness),
       child: Scaffold(
         body: SafeArea(
           child: Column(
             children: [
               const HomeHeader(),
               Expanded(
-                child: SingleChildScrollView(
+                child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const HomeHeroSection(),
-                      const SizedBox(height: 48),
-                      HomeInputSection(
-                        controller: _urlController,
-                        isDownloading: _isDownloading,
-                        onDownloadTriggered: (res) {
-                          // Update default res if changed (optional, but keep consistent)
-                          _defaultResolution = res;
-                          _startDownload(res);
-                        },
-                        initialResolution: _defaultResolution,
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
                       ),
-                      if (_showMockActiveDownload) ...[
-                        const SizedBox(height: 24),
-                        ActiveDownloadCard(
-                          progress: _downloadProgress,
-                          filename: _downloadFileName,
-                        ),
-                      ],
-                      const SizedBox(height: 64),
-                      SupportedPlatformsList(
-                        services: _supportedServices,
-                        isLoading: _isLoadingServices,
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          const HomeHeroSection(),
+                          const SizedBox(height: 48),
+                          HomeInputSection(
+                            controller: _urlController,
+                            isDownloading: _isDownloading,
+                            onDownloadTriggered: (res) {
+                              _defaultResolution = res;
+                              _startDownload(res);
+                            },
+                            initialResolution: _defaultResolution,
+                          ),
+                          if (_showMockActiveDownload) ...[
+                            const SizedBox(height: 24),
+                            ActiveDownloadCard(
+                              progress: _downloadProgress,
+                              filename: _downloadFileName,
+                              onCancel: _cancelDownload,
+                            ),
+                          ],
+                          const SizedBox(height: 64),
+                          SupportedPlatformsList(
+                            services: _supportedServices,
+                            isLoading: _isLoadingServices,
+                          ),
+                          const SizedBox(height: 32),
+                        ]),
                       ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

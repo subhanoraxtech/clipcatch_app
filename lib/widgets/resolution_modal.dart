@@ -40,16 +40,14 @@ class _ResolutionModalState extends State<ResolutionModal> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = AppTheme.surfaceDark;
-    final textColor = AppTheme.textDark;
-    final mutedColor = AppTheme.textMutedDark;
+    final brightness = Theme.of(context).brightness;
 
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundDark,
+        color: AppTheme.backgroundFor(brightness),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
@@ -66,19 +64,8 @@ class _ResolutionModalState extends State<ResolutionModal> {
 
   // ── Sub-builders ──────────────────────────────────────────────────────────
 
-  Widget _buildHandle(bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      height: 5,
-      width: 40,
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.borderDark : const Color(0xFFCBD5E1),
-        borderRadius: BorderRadius.circular(2.5),
-      ),
-    );
-  }
-
   Widget _buildHeader() {
+    final brightness = Theme.of(context).brightness;
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 12, 16, 8),
       child: Row(
@@ -95,9 +82,9 @@ class _ResolutionModalState extends State<ResolutionModal> {
             icon: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceDark,
+                color: AppTheme.surfaceFor(brightness),
                 shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.borderDark),
+                border: Border.all(color: AppTheme.borderFor(brightness)),
               ),
               child: const Icon(Icons.close_rounded, size: 20),
             ),
@@ -180,13 +167,14 @@ class _ResolutionModalState extends State<ResolutionModal> {
   }
 
   Widget _buildFooter() {
+    final brightness = Theme.of(context).brightness;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundDark,
+        color: AppTheme.backgroundFor(brightness),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity01(0.05),
             offset: const Offset(0, -10),
             blurRadius: 20,
           )
@@ -215,7 +203,7 @@ class _ResolutionModalState extends State<ResolutionModal> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color: AppTheme.textMutedDark,
+              color: AppTheme.textMutedFor(brightness),
             ),
           ),
         ],
@@ -236,7 +224,7 @@ void showResolutionModal(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(0.5),
+    barrierColor: Colors.black.withOpacity01(0.5),
     builder: (_) => ResolutionModal(
       onDownload: onDownload, 
       initialSelection: initialSelection,

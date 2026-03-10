@@ -6,6 +6,7 @@ class HomeHeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Column(
       children: [
         const SizedBox(height: 32),
@@ -14,14 +15,14 @@ class HomeHeroSection extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+              colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity01(0.7)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.3),
+                color: AppTheme.primaryColor.withOpacity01(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               )
@@ -43,7 +44,7 @@ class HomeHeroSection extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: AppTheme.textMutedDark,
+              color: AppTheme.textMutedFor(brightness),
               height: 1.5,
             ),
           ),

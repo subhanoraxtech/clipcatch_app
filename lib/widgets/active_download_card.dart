@@ -5,15 +5,18 @@ import 'package:video_downloader/theme/app_theme.dart';
 class ActiveDownloadCard extends StatelessWidget {
   final double progress;
   final String filename;
+  final VoidCallback? onCancel;
 
   const ActiveDownloadCard({
     super.key,
     required this.progress,
     required this.filename,
+    this.onCancel,
   });
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -32,7 +35,7 @@ class ActiveDownloadCard extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withOpacity01(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -52,17 +55,15 @@ class ActiveDownloadCard extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceDark,
-            border: Border.all(
-              color: AppTheme.borderDark,
-            ),
+            color: AppTheme.surfaceFor(brightness),
+            border: Border.all(color: AppTheme.borderFor(brightness)),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withOpacity01(0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Row(
@@ -74,13 +75,20 @@ class ActiveDownloadCard extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppTheme.primaryColor.withOpacity(0.2), AppTheme.primaryColor.withOpacity(0.05)],
+                    colors: [
+                      AppTheme.primaryColor.withOpacity01(0.2),
+                      AppTheme.primaryColor.withOpacity01(0.05),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.movie_filter_rounded, color: AppTheme.primaryColor, size: 28),
+                child: const Icon(
+                  Icons.movie_filter_rounded,
+                  color: AppTheme.primaryColor,
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 16),
 
@@ -94,7 +102,7 @@ class ActiveDownloadCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.textDark,
+                        color: AppTheme.textFor(brightness),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -104,8 +112,10 @@ class ActiveDownloadCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100),
                       child: LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: AppTheme.borderDark,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                        backgroundColor: AppTheme.borderFor(brightness),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryColor,
+                        ),
                         minHeight: 6,
                       ),
                     ),
@@ -126,7 +136,7 @@ class ActiveDownloadCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.textMutedDark,
+                            color: AppTheme.textMutedFor(brightness),
                           ),
                         ),
                       ],
@@ -134,6 +144,28 @@ class ActiveDownloadCard extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              if (onCancel != null)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onCancel,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

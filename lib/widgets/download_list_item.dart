@@ -27,8 +27,9 @@ class DownloadListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaceColor = AppTheme.surfaceDark;
-    final secondaryTextColor = AppTheme.textMutedDark;
+    final brightness = Theme.of(context).brightness;
+    final surfaceColor = AppTheme.surfaceFor(brightness);
+    final secondaryTextColor = AppTheme.textMutedFor(brightness);
 
     return InkWell(
       onTap: onTap,
@@ -55,7 +56,7 @@ class DownloadListItem extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: AppTheme.textDark,
+                      color: AppTheme.textFor(brightness),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -69,7 +70,7 @@ class DownloadListItem extends StatelessWidget {
                   Text(
                     'Downloaded on $date',
                     style: TextStyle(
-                      color: AppTheme.textMutedDark.withOpacity(0.8),
+                      color: secondaryTextColor.withOpacity01(0.85),
                       fontSize: 11,
                     ),
                   ),
