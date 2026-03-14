@@ -4,6 +4,7 @@ import 'package:video_downloader/widgets/settings/settings_header.dart';
 import 'package:video_downloader/widgets/settings/subscription_card.dart';
 import 'package:video_downloader/widgets/settings/preferences_section.dart';
 import 'package:video_downloader/widgets/settings/about_section.dart';
+import 'package:video_downloader/widgets/settings/review_section.dart';
 import 'package:video_downloader/widgets/resolution_modal.dart';
 import 'package:video_downloader/theme/subscription_notifier.dart';
 import 'package:video_downloader/theme/app_theme.dart';
@@ -96,6 +97,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         );
                       },
                     ),
+                    const SizedBox(height: 32),
+                    const ReviewSection(),
                     const SizedBox(height: 32),
                     const AboutSection(),
                     const SizedBox(height: 32),

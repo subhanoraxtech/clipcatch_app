@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/theme/subscription_notifier.dart';
+import 'package:video_downloader/widgets/settings/upgrade_modal.dart';
 
 class SubscriptionCard extends StatelessWidget {
   const SubscriptionCard({super.key});
@@ -107,7 +108,7 @@ class SubscriptionCard extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {
         HapticFeedback.mediumImpact();
-        // Trigger upgrade modal logic (will be handled by parent or notifier)
+        showUpgradeModal(context);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,

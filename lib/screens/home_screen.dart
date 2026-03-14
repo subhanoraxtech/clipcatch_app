@@ -9,6 +9,7 @@ import 'package:video_downloader/widgets/home/home_input_section.dart';
 import 'package:video_downloader/widgets/home/supported_platforms_list.dart';
 import 'package:video_downloader/widgets/active_download_card.dart';
 import 'package:video_downloader/services/api_service.dart';
+import 'package:video_downloader/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gal/gal.dart';
@@ -16,6 +17,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(Map<String, String>)? onDownloadComplete;
@@ -35,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showMockActiveDownload = false;
   String _downloadFileName = 'Downloading Video...';
   String _defaultResolution = '720p';
+  final int _notificationId = 101;
+  final NotificationService _notificationService = NotificationService();
 
   List<String> _supportedServices = [];
   bool _isLoadingServices = true;
@@ -88,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _isCancelledByUser = true;
     });
     _currentDownloadClient?.close();
+    _notificationService.cancelNotification(_notificationId);
     setState(() {
       _isDownloading = false;
       _showMockActiveDownload = false;
@@ -117,11 +122,32 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     final wifiOnly = prefs.getBool('wifi_only') ?? true;
 
-    // TODO: Implement real Wi-Fi check with connectivity_plus if needed
-    // For now we just respect the flag by showing a warning if it's on
-    // but we allow it for testing unless we add the package.
-    if (wifiOnly) {
-      debugPrint('Wi-Fi Only is enabled. Proceeding with caution.');
+    // Connectivity check
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (wifiOnly && !connectivityResult.contains(ConnectivityResult.wifi)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Wi-Fi Only is enabled. Please connect to Wi-Fi.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return;
     }
 
     // Check permission
@@ -240,6 +266,12 @@ class _HomeScreenState extends State<HomeScreen> {
         _downloadFileName = fileName;
       });
 
+      await _notificationService.showDownloadProgress(
+        id: _notificationId,
+        title: fileName,
+        progress: 0,
+      );
+
       // Stream Download using http for chunk processing progress
       final client = http.Client();
       _currentDownloadClient = client; // Store for cancellation
@@ -317,17 +349,31 @@ class _HomeScreenState extends State<HomeScreen> {
             bytesDownloaded += chunk.length;
             debugPrint('Downloaded: $bytesDownloaded bytes');
             if (contentLength > 0 && mounted) {
+              final progressValue = 30 + (bytesDownloaded / contentLength * 60).toInt();
               setState(() {
                 _downloadProgress =
                     0.3 + (bytesDownloaded / contentLength) * 0.6;
               });
+              _notificationService.showDownloadProgress(
+                id: _notificationId,
+                title: fileName,
+                progress: progressValue,
+              );
             } else if (contentLength == 0 && mounted) {
               // Fallback: assume average video size and show progress
               final estimatedSize = 100 * 1024 * 1024; // 100MB estimate
+              final progressValue = 30 + (bytesDownloaded / estimatedSize * 60).toInt();
               setState(() {
                 _downloadProgress =
                     0.3 + (bytesDownloaded / estimatedSize) * 0.6;
               });
+              if (progressValue < 95) {
+                _notificationService.showDownloadProgress(
+                  id: _notificationId,
+                  title: fileName,
+                  progress: progressValue,
+                );
+              }
             }
             return chunk;
           }),
@@ -407,6 +453,11 @@ class _HomeScreenState extends State<HomeScreen> {
               'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop',
         });
 
+        _notificationService.showDownloadComplete(
+          id: _notificationId,
+          title: fileName,
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Video saved to gallery!'),
@@ -420,6 +471,12 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('Download error: $e');
       String msg = e.toString().replaceAll("Exception: ", "");
       if (e is TimeoutException) msg = "Connection timed out.";
+
+      _notificationService.showDownloadError(
+        id: _notificationId,
+        title: _downloadFileName,
+        error: msg,
+      );
 
       if (mounted) {
         setState(() {

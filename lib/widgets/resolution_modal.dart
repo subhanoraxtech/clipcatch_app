@@ -42,22 +42,24 @@ class _ResolutionModalState extends State<ResolutionModal> {
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
-      ),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundFor(brightness),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 8),
-          _buildContent(),
-          _buildFooter(),
-        ],
+    return SafeArea(
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        decoration: BoxDecoration(
+          color: AppTheme.backgroundFor(brightness),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 8),
+            _buildContent(),
+            _buildFooter(),
+          ],
+        ),
       ),
     );
   }
