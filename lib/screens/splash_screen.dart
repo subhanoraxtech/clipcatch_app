@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:video_downloader/screens/main_screen.dart';
+import 'package:video_downloader/services/ad_service.dart';
 import 'package:video_downloader/theme/app_theme.dart';
+import 'package:video_downloader/theme/subscription_notifier.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,10 +16,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoading = false;
+  bool _isAdDismissed = false;
+  DateTime? _startTime;
 
   @override
   void initState() {
     super.initState();
+    _startTime = DateTime.now();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -32,24 +40,107 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    // Navigate to MainScreen after delay
-    Future.delayed(const Duration(milliseconds: 2200), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 800),
-        ),
-      );
+    _loadInterstitialAd();
+
+    // Give the splash screen at least 3 seconds, but check for ad
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      _checkAndNavigate();
     });
+  }
+
+  void _loadInterstitialAd() {
+    if (subscriptionNotifier.isPro) return;
+    
+    if (mounted) {
+      setState(() {
+        _isAdLoading = true;
+      });
+    }
+    debugPrint('Splash: Loading Interstitial Ad...');
+
+    InterstitialAd.load(
+      adUnitId: AdService().interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          debugPrint('Splash: Interstitial Ad LOADED');
+          _interstitialAd = ad;
+          if (mounted) {
+            setState(() {
+              _isAdLoading = false;
+            });
+          }
+        },
+        onAdFailedToLoad: (err) {
+          debugPrint('Splash: Interstitial Ad FAILED to load: $err');
+          _interstitialAd = null;
+          if (mounted) {
+            setState(() {
+              _isAdLoading = false;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> _checkAndNavigate() async {
+    if (!mounted || _isAdDismissed) return;
+
+    // If ad is still loading, wait up to 5 more seconds (total 8s max from start)
+    int waitCount = 0;
+    while (_isAdLoading && waitCount < 10) {
+      debugPrint('Splash: Still loading ad... waiting 500ms (Try $waitCount/10)');
+      await Future.delayed(const Duration(milliseconds: 500));
+      waitCount++;
+    }
+
+    _navigateToMain();
+  }
+
+  void _navigateToMain() {
+    if (!mounted || _isAdDismissed) return;
+
+    if (_interstitialAd != null && !subscriptionNotifier.isPro) {
+      debugPrint('Splash: Attempting to show Interstitial Ad');
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          debugPrint('Splash: Ad Dismissed by user');
+          ad.dispose();
+          _isAdDismissed = true;
+          _proceedToMain();
+        },
+        onAdFailedToShowFullScreenContent: (ad, err) {
+          debugPrint('Splash: Ad Failed to show: $err');
+          ad.dispose();
+          _isAdDismissed = true;
+          _proceedToMain();
+        },
+      );
+      _interstitialAd!.show();
+    } else {
+      debugPrint('Splash: No ad available (isPro: ${subscriptionNotifier.isPro}, adNull: ${_interstitialAd == null}), skip to main');
+      _proceedToMain();
+    }
+  }
+
+  void _proceedToMain() {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 800),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _interstitialAd?.dispose();
     super.dispose();
   }
 
@@ -136,6 +227,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           letterSpacing: 2.5,
                         ),
                       ),
+                      if (_isAdLoading) ...[
+                        const SizedBox(height: 32),
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 );

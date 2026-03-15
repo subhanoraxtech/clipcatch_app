@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/screens/splash_screen.dart';
 import 'package:video_downloader/services/notification_service.dart';
+import 'package:video_downloader/services/ad_service.dart';
 import 'package:video_downloader/theme/subscription_notifier.dart';
 import 'package:video_downloader/theme/theme_notifier.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService().init();
+  await AdService().init();
   await themeNotifier.load();
   runApp(const VideoDownloaderApp());
 }

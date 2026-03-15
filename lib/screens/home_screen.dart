@@ -18,6 +18,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:video_downloader/services/ad_service.dart';
+import 'package:video_downloader/theme/subscription_notifier.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(Map<String, String>)? onDownloadComplete;
@@ -46,12 +49,80 @@ class _HomeScreenState extends State<HomeScreen> {
   http.Client? _currentDownloadClient;
   bool _isCancelledByUser = false;
 
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  InterstitialAd? _interstitialAd;
+
   @override
   void initState() {
     super.initState();
     _requestInitialPermissions();
     _fetchServices();
     _loadSettings();
+    _loadBannerAd();
+    _loadInterstitialAd();
+  }
+
+  void _loadBannerAd() {
+    if (subscriptionNotifier.isPro) return;
+
+    _bannerAd = BannerAd(
+      adUnitId: AdService().bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadInterstitialAd() {
+    if (subscriptionNotifier.isPro) return;
+
+    InterstitialAd.load(
+      adUnitId: AdService().interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+        },
+        onAdFailedToLoad: (err) {
+          debugPrint('InterstitialAd failed to load: $err');
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd(VoidCallback onDismissed) {
+    if (_interstitialAd == null) {
+      onDismissed();
+      return;
+    }
+
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _loadInterstitialAd(); // Load next one
+        onDismissed();
+      },
+      onAdFailedToShowFullScreenContent: (ad, err) {
+        ad.dispose();
+        _loadInterstitialAd(); // Try again
+        onDismissed();
+      },
+    );
+
+    _interstitialAd!.show();
+    _interstitialAd = null;
   }
 
   Future<void> _loadSettings() async {
@@ -110,6 +181,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _urlController.dispose();
     _currentDownloadClient?.close();
+    _bannerAd?.dispose();
+    _interstitialAd?.dispose();
     super.dispose();
   }
 
@@ -118,6 +191,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _startDownload(String resolution) async {
     if (_urlController.text.isEmpty) return;
 
+    if (!subscriptionNotifier.isPro) {
+      _showInterstitialAd(() => _processDownload(resolution));
+    } else {
+      _processDownload(resolution);
+    }
+  }
+
+  Future<void> _processDownload(String resolution) async {
     // Load fresh settings
     final prefs = await SharedPreferences.getInstance();
     final wifiOnly = prefs.getBool('wifi_only') ?? true;
@@ -466,6 +547,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
         _urlController.clear();
+
+        // Show ad after download finishes (non-pro only)
+        if (!subscriptionNotifier.isPro) {
+          _showInterstitialAd(() {});
+        }
       }
     } catch (e) {
       debugPrint('Download error: $e');
@@ -505,6 +591,13 @@ class _HomeScreenState extends State<HomeScreen> {
         body: SafeArea(
           child: Column(
             children: [
+              if (_isAdLoaded && !subscriptionNotifier.isPro)
+                Container(
+                  alignment: Alignment.center,
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
               const HomeHeader(),
               Expanded(
                 child: CustomScrollView(
@@ -551,6 +644,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+        bottomNavigationBar: null,
       ),
     );
   }
