@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class PreferencesSection extends StatelessWidget {
@@ -59,7 +60,7 @@ class PreferencesSection extends StatelessWidget {
           child: Column(
             children: [
               _buildSettingTile(
-                icon: Icons.wifi_rounded,
+                icon: LucideIcons.wifi,
                 title: 'Download via Wi-Fi only',
                 trailing: Switch(
                   value: wifiOnly,
@@ -73,7 +74,7 @@ class PreferencesSection extends StatelessWidget {
               ),
               Divider(height: 1, color: dividerColor, indent: 56),
               _buildSettingTile(
-                icon: Icons.high_quality_rounded,
+                icon: LucideIcons.database,
                 title: 'Default Quality',
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -87,14 +88,14 @@ class PreferencesSection extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Icons.chevron_right_rounded, size: 20, color: mutedColor),
+                    Icon(LucideIcons.chevronRight, size: 20, color: mutedColor),
                   ],
                 ),
                 onTap: onResolutionTap,
               ),
               Divider(height: 1, color: dividerColor, indent: 56),
               _buildSettingTile(
-                icon: Icons.notifications_active_rounded,
+                icon: LucideIcons.bellRing,
                 title: 'Download Notifications',
                 trailing: Switch(
                   value: notificationsEnabled,

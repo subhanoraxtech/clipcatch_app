@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/screens/legal_content_screen.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
@@ -45,7 +46,7 @@ class AboutSection extends StatelessWidget {
             children: [
               _buildAboutTile(
                 context,
-                icon: Icons.info_outline_rounded,
+                icon: LucideIcons.info,
                 title: 'App Version',
                 trailing: Text(
                   '1.0.0 (Build 12)',
@@ -55,9 +56,9 @@ class AboutSection extends StatelessWidget {
               Divider(height: 1, color: dividerColor, indent: 56),
               _buildAboutTile(
                 context,
-                icon: Icons.description_rounded,
+                icon: LucideIcons.fileText,
                 title: 'Terms of Service',
-                trailing: Icon(Icons.open_in_new_rounded, size: 16, color: mutedColor),
+                trailing: Icon(LucideIcons.externalLink, size: 16, color: mutedColor),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -73,9 +74,9 @@ class AboutSection extends StatelessWidget {
               Divider(height: 1, color: dividerColor, indent: 56),
               _buildAboutTile(
                 context,
-                icon: Icons.privacy_tip_rounded,
+                icon: LucideIcons.shieldCheck,
                 title: 'Privacy Policy',
-                trailing: Icon(Icons.open_in_new_rounded, size: 16, color: mutedColor),
+                trailing: Icon(LucideIcons.externalLink, size: 16, color: mutedColor),
                 isLast: true,
                 onTap: () {
                   Navigator.push(

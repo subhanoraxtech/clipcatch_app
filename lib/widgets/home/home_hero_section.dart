@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class HomeHeroSection extends StatelessWidget {
@@ -28,7 +29,7 @@ class HomeHeroSection extends StatelessWidget {
               )
             ],
           ),
-          child: const Icon(Icons.auto_awesome_rounded, size: 40, color: Colors.white),
+          child: const Icon(LucideIcons.sparkles, size: 40, color: Colors.white),
         ),
         const SizedBox(height: 32),
         Text(

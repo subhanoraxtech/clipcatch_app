@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 /// The mock "Active Download" progress card shown on the home screen.
@@ -85,7 +86,7 @@ class ActiveDownloadCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
-                  Icons.movie_filter_rounded,
+                  LucideIcons.film,
                   color: AppTheme.primaryColor,
                   size: 28,
                 ),
@@ -159,7 +160,7 @@ class ActiveDownloadCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
-                        Icons.close_rounded,
+                        LucideIcons.x,
                         size: 18,
                         color: Colors.red,
                       ),

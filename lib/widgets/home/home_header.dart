@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/theme/theme_notifier.dart';
 import 'package:video_downloader/screens/settings_screen.dart';
@@ -33,7 +34,7 @@ class ThemeToggleButton extends StatelessWidget {
                 border: Border.all(color: AppTheme.borderFor(brightness)),
               ),
               child: Icon(
-                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                isDark ? LucideIcons.sun : LucideIcons.moon,
                 size: 20,
               ),
             ),
@@ -86,7 +87,7 @@ class HomeHeader extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppTheme.borderFor(brightness)),
                     ),
-                    child: const Icon(Icons.tune_rounded, size: 20),
+                    child: const Icon(LucideIcons.slidersHorizontal, size: 20),
                   ),
                 ),
               ),

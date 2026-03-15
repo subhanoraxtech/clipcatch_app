@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class AppLoader extends StatefulWidget {
@@ -55,7 +56,7 @@ class _AppLoaderState extends State<AppLoader> with SingleTickerProviderStateMix
           ScaleTransition(
             scale: _pulseAnimation,
             child: Icon(
-              Icons.auto_awesome_rounded,
+              LucideIcons.sparkles,
               size: widget.size * 0.5,
               color: widget.color ?? AppTheme.primaryColor,
             ),

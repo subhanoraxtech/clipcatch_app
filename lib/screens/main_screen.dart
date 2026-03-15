@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/screens/home_screen.dart';
 import 'package:video_downloader/screens/download_history_screen.dart';
 import 'package:video_downloader/screens/settings_screen.dart';
@@ -91,18 +92,18 @@ class _MainScreenState extends State<MainScreen> {
           child: BottomNavigationBar(
             items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
+              icon: const Icon(LucideIcons.house),
+              activeIcon: const Icon(LucideIcons.house),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.history_outlined),
-              activeIcon: Icon(Icons.history),
+              icon: const Icon(LucideIcons.history),
+              activeIcon: const Icon(LucideIcons.history),
               label: 'History',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
+              icon: const Icon(LucideIcons.settings),
+              activeIcon: const Icon(LucideIcons.settings),
               label: 'Settings',
             ),
           ],

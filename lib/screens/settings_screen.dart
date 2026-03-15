@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/widgets/settings/settings_header.dart';
 import 'package:video_downloader/widgets/settings/subscription_card.dart';
 import 'package:video_downloader/widgets/settings/preferences_section.dart';
@@ -93,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                           initialSelection: _selectedRes,
                           buttonLabel: 'Select Quality',
-                          buttonIcon: Icons.check_circle_rounded,
+                          buttonIcon: LucideIcons.circleCheck,
                         );
                       },
                     ),

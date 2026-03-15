@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
@@ -133,10 +134,10 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
                 style: TextStyle(color: AppTheme.textFor(brightness)),
                 decoration: InputDecoration(
                   hintText: 'Search downloaded videos...',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: const Icon(LucideIcons.search),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(LucideIcons.x),
                           onPressed: () => _searchController.clear(),
                         )
                       : null,
@@ -160,7 +161,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.video_library_outlined,
+                            LucideIcons.library,
                             size: 64,
                             color: AppTheme.textMutedFor(brightness).withOpacity01(0.35),
                           ),
@@ -253,7 +254,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.play_circle_outline_rounded),
+              leading: const Icon(LucideIcons.circlePlay),
               title: const Text('Play Video'),
               onTap: () {
                 Navigator.pop(context);
@@ -271,7 +272,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.share_outlined),
+              leading: const Icon(LucideIcons.share2),
               title: const Text('Share Video'),
               onTap: () {
                 Navigator.pop(context);
@@ -279,7 +280,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
+              leading: const Icon(LucideIcons.image),
               title: const Text('Open in Gallery'),
               onTap: () {
                 Navigator.pop(context);
@@ -287,7 +288,7 @@ class _DownloadHistoryScreenState extends State<DownloadHistoryScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              leading: const Icon(LucideIcons.trash2, color: Colors.red),
               title: const Text('Delete', style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);

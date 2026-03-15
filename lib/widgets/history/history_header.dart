@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/screens/settings_screen.dart';
 
@@ -38,7 +39,7 @@ class HistoryHeader extends StatelessWidget {
           IconButton(
             onPressed: isEmpty ? null : onDeleteAll,
             icon: Icon(
-              Icons.delete_outline_rounded,
+              LucideIcons.trash2,
               color: isEmpty 
                 ? AppTheme.textMutedFor(brightness).withOpacity01(0.35)
                 : AppTheme.textFor(brightness),
@@ -53,7 +54,7 @@ class HistoryHeader extends StatelessWidget {
               );
             },
             icon: Icon(
-              Icons.settings_outlined,
+              LucideIcons.settings,
               color: AppTheme.textFor(brightness),
             ),
           ),

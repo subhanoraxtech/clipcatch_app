@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 /// A single download history list item with thumbnail, title, metadata and actions.
@@ -82,7 +83,7 @@ class DownloadListItem extends StatelessWidget {
             IconButton(
               padding: EdgeInsets.zero,
               alignment: Alignment.centerRight,
-              icon: Icon(Icons.more_vert, color: secondaryTextColor),
+              icon: Icon(LucideIcons.ellipsisVertical, color: secondaryTextColor),
               onPressed: onMore,
             ),
           ],
@@ -136,7 +137,7 @@ class _Thumbnail extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white30),
               ),
-              child: const Icon(Icons.play_arrow, color: Colors.white, size: 24),
+              child: const Icon(LucideIcons.play, color: Colors.white, size: 24),
             ),
           ),
           Positioned(

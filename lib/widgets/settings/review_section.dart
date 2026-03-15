@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/widgets/settings/rating_modal.dart';
 
@@ -56,7 +57,7 @@ class ReviewSection extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.star_rounded,
+                        LucideIcons.star,
                         color: AppTheme.accentColor,
                         size: 24,
                       ),
@@ -86,7 +87,7 @@ class ReviewSection extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_ios_rounded,
+                      LucideIcons.chevronRight,
                       size: 14,
                       color: mutedColor.withOpacity01(0.5),
                     ),

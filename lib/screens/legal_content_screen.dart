@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class LegalContentScreen extends StatelessWidget {
@@ -24,7 +25,7 @@ class LegalContentScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
+            LucideIcons.chevronLeft,
             color: isDark ? Colors.white : Colors.black,
             size: 20,
           ),

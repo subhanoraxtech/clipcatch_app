@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
@@ -80,10 +81,10 @@ class SupportedPlatformsList extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Icon(Icons.play_circle_fill_rounded, size: 28),
-          Icon(Icons.camera_rounded, size: 28),
-          Icon(Icons.video_library_rounded, size: 28),
-          Icon(Icons.music_note_rounded, size: 28),
+          Icon(LucideIcons.circlePlay, size: 28),
+          Icon(LucideIcons.instagram, size: 28),
+          Icon(LucideIcons.clapperboard, size: 28),
+          Icon(LucideIcons.music, size: 28),
         ],
       ),
     );

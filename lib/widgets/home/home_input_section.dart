@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/widgets/resolution_modal.dart';
 
 class HomeInputSection extends StatelessWidget {
@@ -25,9 +28,9 @@ class HomeInputSection extends StatelessWidget {
           controller: controller,
           decoration: InputDecoration(
             hintText: 'Paste video link here...',
-            prefixIcon: const Icon(Icons.link_rounded, size: 20),
+            prefixIcon: const Icon(LucideIcons.link, size: 20),
             suffixIcon: IconButton(
-              icon: const Icon(Icons.content_paste_rounded, size: 20),
+              icon: const Icon(LucideIcons.clipboardList, size: 20),
               onPressed: () async {
                 HapticFeedback.lightImpact();
                 final data = await Clipboard.getData(Clipboard.kTextPlain);

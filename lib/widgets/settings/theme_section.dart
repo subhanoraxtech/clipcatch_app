@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class ThemeSection extends StatelessWidget {
@@ -58,7 +59,7 @@ class ThemeSection extends StatelessWidget {
           ),
           child: _buildSettingTile(
             context,
-            icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+            icon: isDark ? LucideIcons.moon : LucideIcons.sun,
             title: 'Dark mode',
             subtitle: 'Switch between light and dark theme',
             trailing: Switch(

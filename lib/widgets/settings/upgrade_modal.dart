@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
+import 'package:video_downloader/services/iap_service.dart';
 
 class UpgradeModal extends StatelessWidget {
   const UpgradeModal({super.key});
@@ -37,7 +39,7 @@ class UpgradeModal extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.bolt_rounded,
+                LucideIcons.zap,
                 color: AppTheme.primaryColor,
                 size: 40,
               ),
@@ -114,9 +116,9 @@ class UpgradeModal extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Text(
-                    '1200 PKR',
-                    style: TextStyle(
+                  Text(
+                    iapService.localizedPrice,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                     ),
@@ -126,12 +128,16 @@ class UpgradeModal extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.heavyImpact();
-                // Placeholder for IAP logic
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('In-App Purchase logic goes here!')),
-                );
+                await iapService.fetchProducts(); // Refresh just in case
+                if (iapService.lifetimeProduct != null) {
+                  await iapService.buyProduct();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Could not load product. Please check your internet connection.')),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
@@ -172,7 +178,7 @@ class UpgradeModal extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: const Icon(
-            Icons.check_rounded,
+            LucideIcons.check,
             color: Colors.white,
             size: 14,
           ),

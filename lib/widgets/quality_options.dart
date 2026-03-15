@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 /// A header divider for sections in the resolution modal (e.g. "FREE", "PREMIUM").
@@ -28,7 +29,7 @@ class SectionHeader extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.workspace_premium, color: accentColor, size: 14),
+                Icon(LucideIcons.gem, color: accentColor, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   title.toUpperCase(),
@@ -134,7 +135,7 @@ class QualityOptionCard extends StatelessWidget {
               Row(
                 children: [
                   if (isSelected) 
-                    Icon(Icons.check_circle_rounded, color: primary, size: 20)
+                    Icon(LucideIcons.circleCheck, color: primary, size: 20)
                   else
                     Container(
                       width: 20,
@@ -242,7 +243,7 @@ class PremiumQualityCard extends StatelessWidget {
                 ],
               ),
               Icon(
-                isSelected ? Icons.verified_rounded : Icons.workspace_premium_rounded,
+                isSelected ? LucideIcons.badgeCheck : LucideIcons.gem,
                 color: isSelected ? primary : primary.withOpacity01(0.4),
                 size: 28,
               ),

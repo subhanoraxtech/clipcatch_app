@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/screens/main_screen.dart';
 import 'package:video_downloader/services/ad_service.dart';
 import 'package:video_downloader/theme/app_theme.dart';
@@ -87,11 +88,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Future<void> _checkAndNavigate() async {
     if (!mounted || _isAdDismissed) return;
 
-    // If ad is still loading, wait up to 5 more seconds (total 8s max from start)
+    // Failsafe: If ad is still loading, wait up to 4 more seconds (total ~7s max)
     int waitCount = 0;
-    while (_isAdLoading && waitCount < 10) {
-      debugPrint('Splash: Still loading ad... waiting 500ms (Try $waitCount/10)');
+    while (_isAdLoading && waitCount < 8 && !(_interstitialAd != null)) {
+      debugPrint('Splash: Still loading ad... waiting 500ms (Try $waitCount/8)');
       await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
       waitCount++;
     }
 
@@ -191,7 +193,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         ],
                       ),
                       child: const Icon(
-                        Icons.auto_awesome_rounded, 
+                        LucideIcons.sparkles, 
                         size: 80, 
                         color: Colors.white,
                       ),

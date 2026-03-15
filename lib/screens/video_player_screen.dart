@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
@@ -140,8 +141,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                   iconSize: 80,
                                   icon: Icon(
                                     _controller.value.isPlaying 
-                                        ? Icons.pause_circle_filled_rounded 
-                                        : Icons.play_circle_filled_rounded,
+                                        ? LucideIcons.circlePause 
+                                        : LucideIcons.circlePlay,
                                     color: Colors.white,
                                   ),
                                   onPressed: () {
@@ -255,7 +256,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                           color: Colors.black.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                        child: const Icon(LucideIcons.arrowLeft, color: Colors.white),
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
@@ -282,7 +283,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.video_library_rounded, color: Colors.white12, size: 80),
+        const Icon(LucideIcons.library, color: Colors.white12, size: 80),
         const SizedBox(height: 24),
         const Text(
           'Unable to play video',

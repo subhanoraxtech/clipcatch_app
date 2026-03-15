@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 import 'package:video_downloader/theme/subscription_notifier.dart';
 import 'package:video_downloader/widgets/settings/upgrade_modal.dart';
@@ -40,7 +41,7 @@ class SubscriptionCard extends StatelessWidget {
             right: -20,
             top: -20,
             child: Icon(
-              isPro ? Icons.diamond_rounded : Icons.star_rounded,
+              isPro ? LucideIcons.gem : LucideIcons.star,
               size: 120,
               color: Colors.white.withOpacity01(0.1),
             ),
@@ -70,7 +71,7 @@ class SubscriptionCard extends StatelessWidget {
                       ),
                     ),
                     if (isPro)
-                      const Icon(Icons.verified_rounded, color: Color(0xFFEAB308), size: 24),
+                      const Icon(LucideIcons.badgeCheck, color: Color(0xFFEAB308), size: 24),
                   ],
                 ),
                 const SizedBox(height: 16),

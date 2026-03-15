@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
 
 class SettingsHeader extends StatelessWidget {
@@ -23,7 +24,7 @@ class SettingsHeader extends StatelessWidget {
                 Navigator.pop(context);
               },
               icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
+                LucideIcons.chevronLeft,
                 size: 20,
               ),
             )

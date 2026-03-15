@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:video_downloader/theme/app_theme.dart';
+import 'package:video_downloader/theme/subscription_notifier.dart';
 import 'package:video_downloader/widgets/quality_options.dart';
 
 /// A bottom-sheet modal that lets users select a video quality before downloading.
@@ -88,7 +90,7 @@ class _ResolutionModalState extends State<ResolutionModal> {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppTheme.borderFor(brightness)),
               ),
-              child: const Icon(Icons.close_rounded, size: 20),
+              child: const Icon(LucideIcons.x, size: 20),
             ),
           ),
         ],
@@ -193,7 +195,7 @@ class _ResolutionModalState extends State<ResolutionModal> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(widget.buttonIcon ?? Icons.download_rounded, size: 20),
+                Icon(widget.buttonIcon ?? LucideIcons.download, size: 20),
                 const SizedBox(width: 8),
                 Text(widget.buttonLabel ?? 'Start Download'),
               ],
