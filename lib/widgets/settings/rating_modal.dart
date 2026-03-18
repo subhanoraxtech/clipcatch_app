@@ -15,7 +15,7 @@ class _RatingModalState extends State<RatingModal> {
   int _rating = 0;
 
   Future<void> _launchUrl() async {
-    const String appId = 'com.example.video_downloader';
+    const String appId = 'com.vyxtronlabs.clipcatch';
     final Uri url = Uri.parse('https://play.google.com/store/apps/details?id=$appId');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw Exception('Could not launch $url');
